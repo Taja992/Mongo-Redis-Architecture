@@ -1,0 +1,143 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Template Root",
+      "path": "."
+    },
+    {
+      "name": "🌐 Web (Next.js)",
+      "path": "web"
+    },
+    {
+      "name": "⚙️ Backend API",
+      "path": "API"
+    }
+  ],
+  "settings": {
+    // === AUTO-SAVE ===
+    // "files.autoSave": "onFocusChange",
+
+    // === EDITOR ===
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    },
+
+    // === CURSOR AI ===
+    "cursor.chat.agentEnabled": true,
+    "cursor.cpp.enablePartialAccepts": true,
+
+    // === TYPESCRIPT/JAVASCRIPT ===
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+
+    // === ESLINT ===
+    "eslint.workingDirectories": ["web"],
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+    ],
+
+    // === PRETTIER ===
+    "prettier.requireConfig": true,
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+
+    // === C# ===
+    "[csharp]": {
+      "editor.defaultFormatter": "csharpier.csharpier-vscode",
+      "editor.formatOnSave": true
+    },
+
+    // === .NET ===
+    "dotnet.defaultSolution": "Template.sln",
+    "omnisharp.enableEditorConfigSupport": true,
+
+    // === FILES ===
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/.turbo": true,
+      "**/bin": true,
+      "**/obj": true,
+      "**/.vs": true
+    },
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/.next/**": true,
+      "**/dist/**": true,
+      "**/.turbo/**": true,
+      "**/bin/**": true,
+      "**/obj/**": true
+    },
+
+    // === SEARCH ===
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/.turbo": true,
+      "**/bin": true,
+      "**/obj": true,
+      "**/package-lock.json": true,
+      "**/yarn.lock": true,
+      "**/pnpm-lock.yaml": true
+    },
+
+    // === TERMINAL ===
+    "terminal.integrated.cwd": "${workspaceFolder:🏠 Template Root}"
+  },
+  "extensions": {
+    "recommendations": [
+      // === FRONTEND (Next.js/TypeScript/Tailwind) ===
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "dsznajder.es7-react-js-snippets",
+      "formulahendry.auto-rename-tag",
+      "christian-kohler.npm-intellisense",
+      "wix.vscode-import-cost",
+
+      // === BACKEND (.NET/C#) ===
+      "ms-dotnettools.csdevkit",        // VS Code users
+      "ms-dotnettools.csharp",          // VS Code users
+      "muhammad-sammy.csharp",          // Cursor users
+      "csharpier.csharpier-vscode",     // Both
+
+      // === DEVOPS ===
+      "ms-azuretools.vscode-docker",
+
+      // === CONFIGURATION FILES ===
+      "redhat.vscode-yaml",
+
+      // === VERSION CONTROL ===
+      "eamodio.gitlens",
+
+      // === AI ===
+      "anthropic.claude-code",
+
+      // === QUALITY OF LIFE ===
+      "usernamehw.errorlens"
+    ]
+  }
+}

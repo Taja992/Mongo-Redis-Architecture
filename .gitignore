@@ -1,0 +1,85 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.tmp
+*.log
+*.vs/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+
+# Copilot
+copilot-instructions.md
+
+# .NET Aspire
+Aspire.Hosting.AppHost/bin/
+Aspire.Hosting.AppHost/obj/
+*.db
+*.db-shm
+*.db-wal
+
+# Rider
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# .NET NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# .NET Publish
+publish/
+*.publishproj
+appsettings.Production.json
+
+# .NET Test Results
+TestResults/
+*.trx
+
+# .NET Tools
+.tools/
+.toolchains/
+
+# Next.js
+node_modules/
+.next/
+out/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn
+ARCHITECTURE.md
+
+# Additional Next.js/pnpm ignores
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnpm-debug.log*
+
+# Docs
+docs
+API/API/appsettings.Development.json
+.claude

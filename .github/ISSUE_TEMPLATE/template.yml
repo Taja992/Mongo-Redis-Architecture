@@ -1,0 +1,73 @@
+name: 'Blank Issue Template'
+description: A template with all possible field types for GitHub Issues
+labels: []
+title: '[ISSUE] - '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Please fill out all relevant fields below.
+
+  - type: input
+    id: short_input
+    attributes:
+      label: Short Input
+      description: A single-line input field.
+      placeholder: Enter text here
+    validations:
+      required: false
+
+  - type: textarea
+    id: long_text
+    attributes:
+      label: Long Text
+      description: A multi-line text area.
+      placeholder: Enter detailed information here
+    validations:
+      required: false
+
+  - type: dropdown
+    id: dropdown_example
+    attributes:
+      label: Dropdown
+      description: Choose one option from the dropdown.
+      options:
+        - Option 1
+        - Option 2
+        - Option 3
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checkboxes_example
+    attributes:
+      label: Checkboxes
+      description: Select all that apply.
+      options:
+        - label: Checkbox 1
+        - label: Checkbox 2
+        - label: Checkbox 3
+    validations:
+      required: false
+
+  - type: textarea
+    id: code_block
+    attributes:
+      label: Code Block
+      description: Paste code or logs here.
+      render: shell
+      placeholder: |
+        ```
+        Paste code here
+        ```
+    validations:
+      required: false
+
+  - type: input
+    id: url_input
+    attributes:
+      label: URL
+      description: Paste a relevant URL.
+      placeholder: https://example.com
+    validations:
+      required: false

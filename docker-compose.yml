@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: template_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: template
+    ports:
+      - "5432:5432"
+    volumes:
+      - template_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d template"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: template_mailhog
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 1025"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  template_postgres_data:
+
+name: template

@@ -1,0 +1,40 @@
+name: Frontend CI
+
+# Uncomment when a frontend is added to the project.
+
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Install pnpm
+#         uses: pnpm/action-setup@v4
+#         with:
+#           version: 10
+
+#       - name: Use Node.js 20
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+#           cache: "pnpm"
+#           cache-dependency-path: web/pnpm-lock.yaml
+
+#       - name: Install dependencies
+#         run: pnpm install
+#         working-directory: web
+
+#       - name: Lint frontend
+#         run: pnpm lint
+#         working-directory: web
+
+#       - name: Build frontend
+#         run: pnpm build
+#         working-directory: web
