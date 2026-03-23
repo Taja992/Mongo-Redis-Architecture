@@ -8,10 +8,12 @@ namespace API.Core.Application.Services;
 public class PostService : IPostService
 {
     private readonly IPostRepository _postRepository;
+    private readonly IPostCacheService _cache;
 
-    public PostService(IPostRepository postRepository)
+    public PostService(IPostRepository postRepository, IPostCacheService cache)
     {
         _postRepository = postRepository;
+        _cache = cache;
     }
 
     public async Task<PostDto?> GetByIdAsync(
@@ -19,10 +21,18 @@ public class PostService : IPostService
         CancellationToken cancellationToken = default
     )
     {
+        // Cache-aside: check cache first
+        Post? cached = await _cache.GetPostAsync(id, cancellationToken);
+        if (cached is not null)
+            return ToDto(cached);
+
+        // Cache miss — go to MongoDB
         Post? post = await _postRepository.GetByIdAsync(id, cancellationToken);
         if (post is null)
             return null;
 
+        // Populate cache for next read
+        await _cache.SetPostAsync(post, cancellationToken);
         return ToDto(post);
     }
 
@@ -42,6 +52,10 @@ public class PostService : IPostService
         };
 
         Post created = await _postRepository.CreateAsync(post, cancellationToken);
+
+        // New post invalidates the cached list for this blog
+        await _cache.InvalidateBlogPostsAsync(blogId, cancellationToken);
+
         return ToDto(created);
     }
 
@@ -64,10 +78,23 @@ public class PostService : IPostService
         post.UpdatedAt = DateTime.UtcNow;
 
         await _postRepository.UpdateAsync(post, cancellationToken);
+
+        // Invalidate stale cache entries
+        await _cache.InvalidatePostAsync(id, cancellationToken);
+        await _cache.InvalidateBlogPostsAsync(post.BlogId, cancellationToken);
     }
 
-    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default) =>
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    {
+        // Fetch before delete so we have BlogId for cache invalidation
+        Post? post = await _postRepository.GetByIdAsync(id, cancellationToken);
+
         await _postRepository.DeleteAsync(id, cancellationToken);
+
+        await _cache.InvalidatePostAsync(id, cancellationToken);
+        if (post is not null)
+            await _cache.InvalidateBlogPostsAsync(post.BlogId, cancellationToken);
+    }
 
     public async Task AddCommentAsync(
         string postId,
@@ -78,6 +105,9 @@ public class PostService : IPostService
         Comment comment = new() { AuthorId = dto.AuthorId, Body = dto.Body };
 
         await _postRepository.AddCommentAsync(postId, comment, cancellationToken);
+
+        // Comment changes the post document — invalidate its cache entry
+        await _cache.InvalidatePostAsync(postId, cancellationToken);
     }
 
     private static PostDto ToDto(Post p) =>

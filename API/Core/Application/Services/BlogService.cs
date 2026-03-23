@@ -10,11 +10,17 @@ public class BlogService : IBlogService
 {
     private readonly IBlogRepository _blogRepository;
     private readonly IPostRepository _postRepository;
+    private readonly IPostCacheService _cache;
 
-    public BlogService(IBlogRepository blogRepository, IPostRepository postRepository)
+    public BlogService(
+        IBlogRepository blogRepository,
+        IPostRepository postRepository,
+        IPostCacheService cache
+    )
     {
         _blogRepository = blogRepository;
         _postRepository = postRepository;
+        _cache = cache;
     }
 
     public async Task<BlogDto?> GetByIdAsync(
@@ -26,7 +32,19 @@ public class BlogService : IBlogService
         if (blog is null)
             return null;
 
-        List<Post> posts = await _postRepository.GetByBlogAsync(id, cancellationToken);
+        // Cache-aside for the post list
+        List<Post>? cachedPosts = await _cache.GetBlogPostsAsync(id, cancellationToken);
+
+        List<Post> posts;
+        if (cachedPosts is not null)
+        {
+            posts = cachedPosts;
+        }
+        else
+        {
+            posts = await _postRepository.GetByBlogAsync(id, cancellationToken);
+            await _cache.SetBlogPostsAsync(id, posts, cancellationToken);
+        }
 
         return new BlogDto(
             blog.Id,
@@ -34,8 +52,8 @@ public class BlogService : IBlogService
             blog.Title,
             blog.Description,
             blog.Tags,
-            [
-                .. posts.Select(p => new PostDto(
+            posts
+                .Select(p => new PostDto(
                     p.Id,
                     p.BlogId,
                     p.AuthorId,
@@ -44,8 +62,8 @@ public class BlogService : IBlogService
                     p.Tags,
                     p.Comments.Count,
                     p.CreatedAt
-                )),
-            ],
+                ))
+                .ToList(),
             blog.CreatedAt
         );
     }
@@ -64,7 +82,6 @@ public class BlogService : IBlogService
         };
 
         Blog created = await _blogRepository.CreateAsync(blog, cancellationToken);
-
         return new BlogDto(
             created.Id,
             created.UserId,
@@ -78,10 +95,10 @@ public class BlogService : IBlogService
 
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        // Delete posts first, then the blog
-        // If DeleteByBlogAsync succeeds but DeleteAsync fails, posts are gone but blog remains.
-        // TODO: wrap in a transaction if data consistency is required
         await _postRepository.DeleteByBlogAsync(id, cancellationToken);
         await _blogRepository.DeleteAsync(id, cancellationToken);
+
+        // All posts for this blog are gone — wipe the list cache
+        await _cache.InvalidateBlogPostsAsync(id, cancellationToken);
     }
 }

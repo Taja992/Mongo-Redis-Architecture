@@ -52,13 +52,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // TODO: Add these when extension methods/types exist in mongoredisarchitecture.
 builder.Services.AddExceptionHandling();
 
-// builder.Services.AddJwtAuthentication(jwtSettings);
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
-
-// builder.Services.AddIdentityServices();
-// builder.Services.AddRateLimiting();
-
 // MongoDB
 builder.Services.AddSingleton<IMongoClient>(
     new MongoClient(builder.Configuration["MongoDB:ConnectionString"])
@@ -67,6 +60,16 @@ builder.Services.AddSingleton<IMongoClient>(
 builder.Services.AddScoped(sp =>
     sp.GetRequiredService<IMongoClient>().GetDatabase(builder.Configuration["MongoDB:Database"])
 );
+
+// Redis
+builder.Services.AddRedis(builder.Configuration);
+
+// builder.Services.AddJwtAuthentication(jwtSettings);
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure();
+
+// builder.Services.AddIdentityServices();
+// builder.Services.AddRateLimiting();
 
 var app = builder.Build();
 
