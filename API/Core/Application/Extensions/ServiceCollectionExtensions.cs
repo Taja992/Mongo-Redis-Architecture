@@ -1,3 +1,4 @@
+using API.Core.Application.Domain.Interfaces;
 using API.Core.Application.Interfaces;
 using API.Core.Application.Services;
 using API.Core.Domain.Interfaces;
@@ -21,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IPostService, PostService>();
         services.AddScoped<IPostCacheService, RedisPostCacheService>();
+        services.AddScoped<IRateLimitService, RedisRateLimitService>();
 
         // Auth Services
 

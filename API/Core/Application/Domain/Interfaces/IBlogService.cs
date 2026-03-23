@@ -1,6 +1,6 @@
 using API.Core.Application.Domain.Dto.Blog;
 
-namespace API.Core.Application.Interfaces;
+namespace API.Core.Application.Domain.Interfaces;
 
 public interface IBlogService
 {

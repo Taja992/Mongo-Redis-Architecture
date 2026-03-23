@@ -1,5 +1,5 @@
 using API.Core.Application.Domain.Dto.Blog;
-using API.Core.Application.Interfaces;
+using API.Core.Application.Domain.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,5 +1,5 @@
+using API.Core.Application.Domain.Interfaces;
 using API.Core.Application.Interfaces;
-using API.Core.Domain.Interfaces;
 
 namespace API.Core.Application.Services;
 

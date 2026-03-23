@@ -1,5 +1,6 @@
 using API.Core.Application.Domain.Dto.Blog;
 using API.Core.Application.Domain.Dto.Post;
+using API.Core.Application.Domain.Interfaces;
 using API.Core.Application.Interfaces;
 using API.Core.Domain.Entities;
 using API.Core.Domain.Interfaces;

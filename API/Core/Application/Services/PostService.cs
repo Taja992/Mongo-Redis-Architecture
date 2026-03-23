@@ -1,4 +1,5 @@
 using API.Core.Application.Domain.Dto.Post;
+using API.Core.Application.Domain.Interfaces;
 using API.Core.Application.Interfaces;
 using API.Core.Domain.Entities;
 using API.Core.Domain.Interfaces;
@@ -9,11 +10,17 @@ public class PostService : IPostService
 {
     private readonly IPostRepository _postRepository;
     private readonly IPostCacheService _cache;
+    private readonly IRateLimitService _rateLimiter;
 
-    public PostService(IPostRepository postRepository, IPostCacheService cache)
+    public PostService(
+        IPostRepository postRepository,
+        IPostCacheService cache,
+        IRateLimitService rateLimiter
+    )
     {
         _postRepository = postRepository;
         _cache = cache;
+        _rateLimiter = rateLimiter;
     }
 
     public async Task<PostDto?> GetByIdAsync(
@@ -102,11 +109,11 @@ public class PostService : IPostService
         CancellationToken cancellationToken = default
     )
     {
+        // Throws RateLimitExceededException (→ 429) if user is over the limit.
+        await _rateLimiter.CheckCommentRateAsync(dto.AuthorId, cancellationToken);
+
         Comment comment = new() { AuthorId = dto.AuthorId, Body = dto.Body };
-
         await _postRepository.AddCommentAsync(postId, comment, cancellationToken);
-
-        // Comment changes the post document — invalidate its cache entry
         await _cache.InvalidatePostAsync(postId, cancellationToken);
     }
 

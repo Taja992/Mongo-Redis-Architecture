@@ -1,4 +1,4 @@
-using API.Core.Domain.Interfaces;
+using API.Core.Application.Domain.Interfaces;
 
 namespace API.Infrastructure.Repositories;
 

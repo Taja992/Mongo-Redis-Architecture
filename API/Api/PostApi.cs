@@ -1,5 +1,5 @@
 using API.Core.Application.Domain.Dto.Post;
-using API.Core.Application.Interfaces;
+using API.Core.Application.Domain.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,19 +15,19 @@ public static class PostApi
             .WithName("Create a post.")
             .WithDescription("Creates a new post inside a blog.");
 
-        api.MapGet("/posts/{id}", GetPost)
+        api.MapGet("/posts/{postId}", GetPost)
             .WithName("Get post by ID.")
             .WithDescription("Fetches a post by its ID.");
 
-        api.MapPut("/posts/{id}", UpdatePost)
+        api.MapPut("/posts/{postId}", UpdatePost)
             .WithName("Update a post.")
             .WithDescription("Updates the content of an existing post.");
 
-        api.MapDelete("/posts/{id}", DeletePost)
+        api.MapDelete("/posts/{postId}", DeletePost)
             .WithName("Delete a post.")
             .WithDescription("Deletes a post by its ID.");
 
-        api.MapPost("/posts/{id}/comments", AddComment)
+        api.MapPost("/posts/{postId}/comments", AddComment)
             .WithName("Add a comment.")
             .WithDescription("Adds a comment to a post.");
 
@@ -46,44 +46,44 @@ public static class PostApi
     }
 
     static async Task<Results<Ok<PostDto>, NotFound>> GetPost(
-        string id,
+        string postId,
         [FromServices] IPostService postService,
         CancellationToken cancellationToken
     )
     {
-        PostDto? post = await postService.GetByIdAsync(id, cancellationToken);
+        PostDto? post = await postService.GetByIdAsync(postId, cancellationToken);
         return post is null ? TypedResults.NotFound() : TypedResults.Ok(post);
     }
 
     static async Task<NoContent> UpdatePost(
-        string id,
+        string postId,
         [FromBody] UpdatePostDto dto,
         [FromServices] IPostService postService,
         CancellationToken cancellationToken
     )
     {
-        await postService.UpdateAsync(id, dto, cancellationToken);
+        await postService.UpdateAsync(postId, dto, cancellationToken);
         return TypedResults.NoContent();
     }
 
     static async Task<NoContent> DeletePost(
-        string id,
+        string postId,
         [FromServices] IPostService postService,
         CancellationToken cancellationToken
     )
     {
-        await postService.DeleteAsync(id, cancellationToken);
+        await postService.DeleteAsync(postId, cancellationToken);
         return TypedResults.NoContent();
     }
 
     static async Task<NoContent> AddComment(
-        string id,
+        string postId,
         [FromBody] AddCommentDto dto,
         [FromServices] IPostService postService,
         CancellationToken cancellationToken
     )
     {
-        await postService.AddCommentAsync(id, dto, cancellationToken);
+        await postService.AddCommentAsync(postId, dto, cancellationToken);
         return TypedResults.NoContent();
     }
 }
