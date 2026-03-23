@@ -1,7 +1,9 @@
 using API.Core.Application.Interfaces;
 using API.Core.Application.Services;
 using API.Core.Domain.Interfaces;
+using API.Infrastructure.Cache;
 using API.Infrastructure.Repositories;
+using StackExchange.Redis;
 
 namespace API.Core.Application.Extensions;
 
@@ -18,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IPostService, PostService>();
+        services.AddScoped<IPostCacheService, RedisPostCacheService>();
 
         // Auth Services
 
@@ -47,6 +50,22 @@ public static class ServiceCollectionExtensions
 
         // Seeder
         //services.AddScoped<DbSeeder>();
+        return services;
+    }
+
+    public static IServiceCollection AddRedis(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        string connectionString =
+            configuration["Redis:ConnectionString"]
+            ?? throw new InvalidOperationException("Redis:ConnectionString is not configured.");
+
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(connectionString)
+        );
+
         return services;
     }
 }
