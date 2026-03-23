@@ -1,23 +1,32 @@
-# MongoRedisArchitecture
+# Mongo Redis Architecture
 
-A .NET 10 / ASP.NET Core mongoredisarchitecture using Clean Architecture.
+A blogging platform built with .NET 10 / ASP.NET Core, MongoDB, and Redis — demonstrating Clean Architecture with a document store, caching, and rate limiting.
 
 ---
 
 ## Quick Start
 
 ```bash
-# Clone and rename
-git clone <repo> MyProject
-cd MyProject
-bash rename-project.sh MyProject
+# Start MongoDB + Redis
+docker compose up -d
 
-# Run
-dotnet build
+# Run the API
 dotnet run --project API
 ```
 
-API runs on `http://localhost:8080` · Scalar docs at `/scalar/v1` (dev only)
+API runs on `http://localhost:8080` · Scalar docs at `/scalar` (dev only)
+
+---
+
+## Stack
+
+| Layer | Technology |
+| --- | --- |
+| API | .NET 10 / ASP.NET Core minimal APIs |
+| Database | MongoDB (document store) |
+| Cache / Rate Limiting | Redis via StackExchange.Redis |
+| Logging | Serilog |
+| Docs | Scalar / OpenAPI |
 
 ---
 
@@ -25,107 +34,86 @@ API runs on `http://localhost:8080` · Scalar docs at `/scalar/v1` (dev only)
 
 ```text
 ├── API/
-│   ├── Api/                         → Minimal API endpoints
+│   ├── Api/                         → Minimal API endpoints (BlogApi, PostApi)
 │   ├── Core/
 │   │   ├── Application/
-│   │   │   ├── Domain/Dto/          → DTOs
-│   │   │   ├── Extensions/          → Dependency injection
-│   │   │   ├── Interfaces/          → Service interfaces
-│   │   │   └── Services/            → Service implementations
-│   │   ├── Configuration/           → AppOptions
+│   │   │   ├── Domain/
+│   │   │   │   ├── Dto/             → Request/response records
+│   │   │   │   └── Exceptions/      → AppException, RateLimitExceededException
+│   │   │   ├── Exceptions/          → GlobalExceptionHandler, AddExceptionHandling()
+│   │   │   ├── Extensions/          → AddApplication(), AddInfrastructure(), AddRedis()
+│   │   │   ├── Interfaces/          → IPostService, IBlogService, IPostCacheService, IRateLimitService
+│   │   │   └── Services/            → PostService, BlogService
 │   │   └── Domain/
-│   │       ├── Entities/            → EF Core entities
-│   │       └── Interfaces/          → Repository interfaces
+│   │       ├── Entities/            → Blog, Post, Comment (MongoDB documents)
+│   │       └── Interfaces/          → IBlogRepository, IPostRepository
 │   ├── Infrastructure/
-│   │   ├── Configuration/           → IEntityTypeConfiguration
-│   │   ├── Repositories/            → Repository implementations
-│   │   └── AppDbContext.cs
-│   ├── appsettings.json
+│   │   ├── Cache/                   → RedisPostCacheService, RedisRateLimitService
+│   │   └── Repositories/            → MongoBlogRepository, MongoPostRepository
+│   ├── appsettings.Development.json
 │   └── Program.cs
 ├── tests/
-│   ├── IntegrationTests/            → Testcontainers + WebApplicationFactory
-│   └── UnitTests/                   → xUnit + NSubstitute
-├── .github/workflows/               → CI (backend)
-├── docker-compose.yml               → Postgres + MailHog
-├── rename-project.sh                → Rename the mongoredisarchitecture
+│   ├── IntegrationTests/
+│   └── UnitTests/
+├── docs/                            → Implementation guides (see below)
+├── docker-compose.yml               → MongoDB + Redis
 └── MongoRedisArchitecture.sln
 ```
 
 ---
 
-## Before You Go Live
+## Domain
 
-**Swap the database** — `Program.cs` uses InMemory by default. Replace with Npgsql:
+User → Blog → Post → Comment
 
-```csharp
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
-);
-```
-
-Store the connection string in user secrets for local dev:
-
-```bash
-dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Database=myapp;Username=postgres;Password=postgres"
-```
-
-**Run migrations** (required before integration tests will pass against Postgres):
-
-```bash
-dotnet ef migrations add Initial --project API
-dotnet ef database update --project API
-```
-
-**Enable JWT auth** — uncomment `AddJwtAuthentication` in `Program.cs` and `AddIdentityServices`.
+- A `Blog` is owned by a user and contains many `Post` documents
+- A `Post` embeds its `Comment` list directly (no separate collection)
+- Comments are append-only via MongoDB `$push`
 
 ---
 
-## Local Dev with Docker
+## Key Architecture Decisions
 
-`docker-compose up` starts Postgres on port `5432` and MailHog on `8025` (email UI).
+**MongoDB over a relational DB**
+Comments are embedded inside the Post document. A single read fetches the post and all its comments — no joins, no N+1. Posts are referenced from Blog by ID (not embedded) because posts grow unbounded.
 
----
+**Cache-aside with Redis**
+Individual posts are cached at `post:{id}` and blog post lists at `blog:{blogId}:posts`. The cache is populated on read and invalidated on write. TTL is configurable via `Redis:PostTtlSeconds`.
 
-## Running Tests
+**Redis for rate limiting**
+Comment rate limiting uses Redis `INCR` — atomic, no race condition. The counter key is `rate:comment:{authorId}` and expires after the window (default 1 hour, 10 comments max). Exceeding the limit throws `RateLimitExceededException` → 429.
 
-**Unit tests:**
+**Global exception handling**
+All errors surface through `GlobalExceptionHandler` as RFC 9457 `ProblemDetails`. Services throw domain exceptions (`AppException` subclasses); endpoints have no try/catch.
 
-```bash
-dotnet test tests/UnitTests
-```
-
-**Integration tests** — Docker must be running (Testcontainers spins up a `postgres:16` container):
-
-```bash
-dotnet test tests/IntegrationTests
-```
+**No EF Core for domain entities**
+`AppDbContext` is present but unused by the blog domain — it's a template artefact backed by an in-memory DB. All domain data flows through the MongoDB repositories.
 
 ---
 
-## Renaming This MongoRedisArchitecture
+## Endpoints
 
-```bash
-bash rename-project.sh MyNewProject
-```
-
-Replaces `MongoRedisArchitecture`/`mongoredisarchitecture` across all file contents, file names, and folder names. Skips `.git/`, `bin/`, `obj/`, `node_modules/`.
-
-Verify after running:
-
-```bash
-dotnet build
-```
+| Method | Route | Description |
+| --- | --- | --- |
+| `POST` | `/api/blogs` | Create a blog |
+| `GET` | `/api/blogs/{id}` | Get blog with all posts |
+| `DELETE` | `/api/blogs/{id}` | Delete blog and its posts |
+| `POST` | `/api/blogs/{blogId}/posts` | Create a post |
+| `GET` | `/api/posts/{id}` | Get a post |
+| `PUT` | `/api/posts/{id}` | Update a post |
+| `DELETE` | `/api/posts/{id}` | Delete a post |
+| `POST` | `/api/posts/{id}/comments` | Add a comment (rate limited) |
+| `GET` | `/health` | Health check |
 
 ---
 
-## Dev Container (VS Code / Cursor)
+## Docs
 
-This repo includes `.devcontainer/devcontainer.json` for a reproducible Docker-based dev environment.
+Step-by-step implementation guides in [`docs/`](docs/):
 
-- .NET 10 dev image
-- Runs `dotnet restore` on container creation
-- Forwards port `8080`
-
-**VS Code** — `Dev Containers: Reopen in Container`
-
-**Cursor** — same command via command palette. If Dev Container commands are missing in your Cursor build, open in VS Code first then switch back to Cursor.
+| Doc | What it covers |
+| --- | --- |
+| [part-01-data-model-design.md](docs/part-01-data-model-design.md) | MongoDB schema design, embed vs reference decisions |
+| [part-02-full-implementation.md](docs/part-02-full-implementation.md) | Full file-by-file implementation of the blog domain |
+| [part-03-redis-caching.md](docs/part-03-redis-caching.md) | Cache-aside for posts and blog post lists |
+| [part-04-rate-limiting.md](docs/part-04-rate-limiting.md) | Per-user comment rate limiting with Redis INCR |

@@ -19,7 +19,7 @@ public static class ExceptionHandlingExtensions
             // Uncomment and customize as exception hierarchy grows.
             // NotFoundException => "Not Found",
             // ConflictException => "Already Exists",
-            // RateLimitExceededException => "Rate Limit Exceeded",
+            RateLimitExceededException => "Rate Limit Exceeded",
             _ => ex.StatusCode switch
             {
                 400 => "Bad Request",

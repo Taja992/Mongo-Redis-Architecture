@@ -1,6 +1,6 @@
 using API.Core.Application.Domain.Dto.Post;
 
-namespace API.Core.Application.Interfaces;
+namespace API.Core.Application.Domain.Interfaces;
 
 public interface IPostService
 {
