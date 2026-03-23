@@ -11,16 +11,19 @@ public class PostService : IPostService
     private readonly IPostRepository _postRepository;
     private readonly IPostCacheService _cache;
     private readonly IRateLimitService _rateLimiter;
+    private readonly IPostSearchService _search;
 
     public PostService(
         IPostRepository postRepository,
         IPostCacheService cache,
-        IRateLimitService rateLimiter
+        IRateLimitService rateLimiter,
+        IPostSearchService search
     )
     {
         _postRepository = postRepository;
         _cache = cache;
         _rateLimiter = rateLimiter;
+        _search = search;
     }
 
     public async Task<PostDto?> GetByIdAsync(
@@ -60,8 +63,8 @@ public class PostService : IPostService
 
         Post created = await _postRepository.CreateAsync(post, cancellationToken);
 
-        // New post invalidates the cached list for this blog
         await _cache.InvalidateBlogPostsAsync(blogId, cancellationToken);
+        await _search.IndexPostAsync(created, cancellationToken);
 
         return ToDto(created);
     }
@@ -86,14 +89,15 @@ public class PostService : IPostService
 
         await _postRepository.UpdateAsync(post, cancellationToken);
 
-        // Invalidate stale cache entries
         await _cache.InvalidatePostAsync(id, cancellationToken);
         await _cache.InvalidateBlogPostsAsync(post.BlogId, cancellationToken);
+        await _search.IndexPostAsync(post, cancellationToken);
+
+        return;
     }
 
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        // Fetch before delete so we have BlogId for cache invalidation
         Post? post = await _postRepository.GetByIdAsync(id, cancellationToken);
 
         await _postRepository.DeleteAsync(id, cancellationToken);
@@ -101,6 +105,8 @@ public class PostService : IPostService
         await _cache.InvalidatePostAsync(id, cancellationToken);
         if (post is not null)
             await _cache.InvalidateBlogPostsAsync(post.BlogId, cancellationToken);
+
+        await _search.RemovePostAsync(id, cancellationToken);
     }
 
     public async Task AddCommentAsync(

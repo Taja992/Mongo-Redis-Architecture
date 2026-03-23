@@ -4,6 +4,7 @@ using API.Core.Application.Services;
 using API.Core.Domain.Interfaces;
 using API.Infrastructure.Cache;
 using API.Infrastructure.Repositories;
+using API.Infrastructure.Search;
 using StackExchange.Redis;
 
 namespace API.Core.Application.Extensions;
@@ -23,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPostService, PostService>();
         services.AddScoped<IPostCacheService, RedisPostCacheService>();
         services.AddScoped<IRateLimitService, RedisRateLimitService>();
+        services.AddScoped<IPostSearchService, RedisPostSearchService>();
 
         // Auth Services
 

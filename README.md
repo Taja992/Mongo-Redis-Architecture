@@ -106,14 +106,3 @@ All errors surface through `GlobalExceptionHandler` as RFC 9457 `ProblemDetails`
 | `GET` | `/health` | Health check |
 
 ---
-
-## Docs
-
-Step-by-step implementation guides in [`docs/`](docs/):
-
-| Doc | What it covers |
-| --- | --- |
-| [part-01-data-model-design.md](docs/part-01-data-model-design.md) | MongoDB schema design, embed vs reference decisions |
-| [part-02-full-implementation.md](docs/part-02-full-implementation.md) | Full file-by-file implementation of the blog domain |
-| [part-03-redis-caching.md](docs/part-03-redis-caching.md) | Cache-aside for posts and blog post lists |
-| [part-04-rate-limiting.md](docs/part-04-rate-limiting.md) | Per-user comment rate limiting with Redis INCR |
