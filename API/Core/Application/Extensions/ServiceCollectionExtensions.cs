@@ -3,7 +3,7 @@ using API.Core.Application.Services;
 using API.Core.Domain.Interfaces;
 using API.Infrastructure.Repositories;
 
-namespace API.Application.Extensions;
+namespace API.Core.Application.Extensions;
 
 public static class ServiceCollectionExtensions
 {
@@ -12,27 +12,14 @@ public static class ServiceCollectionExtensions
         //services.AddScoped<ICurrentContext, CurrentContext>();
 
         // Application Services
-        services.AddScoped<ITemplateService, TemplateService>();
-        // services.AddScoped<IAzureBlobService, AzureBlobService>();
-        // services.AddScoped<IUserRegistrationService, UserRegistrationService>();
-        // services.AddScoped<IUserService, UserService>();
-        // services.AddScoped<IStripeService, StripeService>();
-
-        // URL Validation
-        //services.AddSingleton<IUrlValidator, UrlBlocklist>();
+        services.AddScoped<IMongoRedisArchitectureService, MongoRedisArchitectureService>();
 
         // TimeProvider
         services.AddSingleton(TimeProvider.System);
+        services.AddScoped<IBlogService, BlogService>();
+        services.AddScoped<IPostService, PostService>();
 
         // Auth Services
-        // services.AddScoped<ITokenClaimsService, JwtTokenClaimService>();
-        // services.AddScoped<IOAuthCoordinator, OAuthCoordinator>();
-        // services.AddScoped<IGoogleService, GoogleService>();
-        // services.AddScoped<IYouTubeService, YouTubeService>();
-        // services.AddScoped<ITwitchService, TwitchService>();
-        // services.AddScoped<ITwitterService, TwitterService>();
-        // services.AddScoped<IOAuthService, OAuthService>();
-        // services.AddScoped<IUserDataExportService, UserDataExportService>();
 
         // FleuntValidation the RegisterRequestValidator is just a marker because the method uses <T>
         // so any validator will work.
@@ -43,7 +30,7 @@ public static class ServiceCollectionExtensions
         // });
 
         // Email services
-        // services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
+        // services.AddSingleton<IEmailMongoRedisArchitectureService, EmailMongoRedisArchitectureService>();
         // services.AddScoped<IEmailService, EmailService>();
 
         return services;
@@ -51,9 +38,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddScoped<ITemplateRepository, TemplateRepository>();
-        // services.AddScoped<IUserRepository, UserRepository>();
-        // services.AddScoped<IUserDataExportRepository, UserDataExportRepository>();
+        services.AddScoped<IMongoRedisArchitectureRepository, MongoRedisArchitectureRepository>();
+        services.AddScoped<IBlogRepository, MongoBlogRepository>();
+        services.AddScoped<IPostRepository, MongoPostRepository>();
 
         // Interceptors
         //services.AddScoped<OwnershipInterceptor>();

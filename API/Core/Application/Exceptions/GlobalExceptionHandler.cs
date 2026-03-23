@@ -27,7 +27,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                     ["traceId"] = httpContext.TraceIdentifier,
                 },
             },
-            // Keep this block as part of the template; uncomment when FluentValidation is added.
+            // Keep this block as part of the mongoredisarchitecture; uncomment when FluentValidation is added.
             // ValidationException validationEx => new ProblemDetails
             // {
             //     Status = 400,

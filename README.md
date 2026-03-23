@@ -1,6 +1,6 @@
-# Template
+# MongoRedisArchitecture
 
-A .NET 10 / ASP.NET Core template using Clean Architecture.
+A .NET 10 / ASP.NET Core mongoredisarchitecture using Clean Architecture.
 
 ---
 
@@ -47,8 +47,8 @@ API runs on `http://localhost:8080` · Scalar docs at `/scalar/v1` (dev only)
 │   └── UnitTests/                   → xUnit + NSubstitute
 ├── .github/workflows/               → CI (backend)
 ├── docker-compose.yml               → Postgres + MailHog
-├── rename-project.sh                → Rename the template
-└── Template.sln
+├── rename-project.sh                → Rename the mongoredisarchitecture
+└── MongoRedisArchitecture.sln
 ```
 
 ---
@@ -102,13 +102,13 @@ dotnet test tests/IntegrationTests
 
 ---
 
-## Renaming This Template
+## Renaming This MongoRedisArchitecture
 
 ```bash
 bash rename-project.sh MyNewProject
 ```
 
-Replaces `Template`/`template` across all file contents, file names, and folder names. Skips `.git/`, `bin/`, `obj/`, `node_modules/`.
+Replaces `MongoRedisArchitecture`/`mongoredisarchitecture` across all file contents, file names, and folder names. Skips `.git/`, `bin/`, `obj/`, `node_modules/`.
 
 Verify after running:
 

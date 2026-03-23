@@ -1,9 +1,10 @@
 using API.Api;
-using API.Application.Extensions;
 using API.Core.Application.Exceptions;
+using API.Core.Application.Extensions;
 using API.Core.Configuration;
 using API.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -41,14 +42,14 @@ builder.Services.AddCors(options =>
     );
 });
 
-// Minimal DbContext setup for template startup; replace with Npgsql/SqlServer later.
+// Minimal DbContext setup for mongoredisarchitecture startup; replace with Npgsql/SqlServer later.
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-    options.UseInMemoryDatabase("TemplateDb");
+    options.UseInMemoryDatabase("MongoRedisArchitectureDb");
 });
 
-// TODO: Add these when extension methods/types exist in template.
+// TODO: Add these when extension methods/types exist in mongoredisarchitecture.
 builder.Services.AddExceptionHandling();
 
 // builder.Services.AddJwtAuthentication(jwtSettings);
@@ -57,6 +58,15 @@ builder.Services.AddInfrastructure();
 
 // builder.Services.AddIdentityServices();
 // builder.Services.AddRateLimiting();
+
+// MongoDB
+builder.Services.AddSingleton<IMongoClient>(
+    new MongoClient(builder.Configuration["MongoDB:ConnectionString"])
+);
+
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IMongoClient>().GetDatabase(builder.Configuration["MongoDB:Database"])
+);
 
 var app = builder.Build();
 
@@ -74,7 +84,18 @@ app.UseHttpsRedirection();
 app.UseCors("FrontendPolicy");
 
 app.MapHealthChecks("/health").AllowAnonymous();
-app.MapTemplatesApi();
+app.MapBlogApi();
+app.MapPostApi();
+
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+{
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        ILogger<Program> logger = app.Services.GetRequiredService<ILogger<Program>>();
+        string? address = app.Urls.FirstOrDefault();
+        logger.LogInformation("Scalar docs: {Address}/scalar", address);
+    });
+}
 
 app.Run();
 

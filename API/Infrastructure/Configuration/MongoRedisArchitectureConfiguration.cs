@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace API.Infrastructure.Configuration;
 
-public class TemplateConfiguration : IEntityTypeConfiguration<Template>
+public class MongoRedisArchitectureConfiguration : IEntityTypeConfiguration<MongoRedisArchitecture>
 {
-    public void Configure(EntityTypeBuilder<Template> builder)
+    public void Configure(EntityTypeBuilder<MongoRedisArchitecture> builder)
     {
         // Only configure what EF can't infer automatically
 

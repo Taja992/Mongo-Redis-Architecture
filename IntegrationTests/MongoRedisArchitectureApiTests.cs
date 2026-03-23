@@ -2,7 +2,7 @@ using IntegrationTests.WebApplicationFactories;
 
 namespace IntegrationTests;
 
-public class TemplateApiTests(CustomWebApplicationFactory<Program> factory)
+public class MongoRedisArchitectureApiTests(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly HttpClient _client = factory.CreateClient();

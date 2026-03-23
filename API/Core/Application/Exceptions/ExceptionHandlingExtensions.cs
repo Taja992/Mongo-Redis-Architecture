@@ -15,7 +15,7 @@ public static class ExceptionHandlingExtensions
     public static string GetTitleFromException(AppException ex) =>
         ex switch
         {
-            TemplateException => "Template",
+            MongoRedisArchitectureException => "MongoRedisArchitecture",
             // Uncomment and customize as exception hierarchy grows.
             // NotFoundException => "Not Found",
             // ConflictException => "Already Exists",

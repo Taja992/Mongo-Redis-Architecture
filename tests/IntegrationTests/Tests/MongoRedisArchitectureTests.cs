@@ -5,7 +5,7 @@ using Xunit;
 
 namespace IntegrationTests.Tests;
 
-public class TemplateTests(CustomWebApplicationFactory<Program> factory)
+public class MongoRedisArchitectureTests(CustomWebApplicationFactory<Program> factory)
     : BaseIntegrationTest(factory)
 {
     [Fact]

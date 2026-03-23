@@ -16,7 +16,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
         .WithImage("postgres:16")
-        .WithDatabase("Template-Integration")
+        .WithDatabase("MongoRedisArchitecture-Integration")
         .WithUsername("testuser")
         .WithPassword("testpass")
         .Build();

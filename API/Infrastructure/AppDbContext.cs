@@ -43,7 +43,7 @@ public class AppDbContext : DbContext
 
     // public DbSet<AppUser> AppUsers { get; set; } = null!;
     // public DbSet<OAuthAccount> OAuthAccounts { get; set; } = null!;
-    public DbSet<Template> Tests { get; set; } = null!;
+    public DbSet<MongoRedisArchitecture> Tests { get; set; } = null!;
 
     // public DbSet<StripeAccount> StripeAccounts { get; set; } = null!;
 

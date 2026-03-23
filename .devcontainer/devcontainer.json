@@ -1,5 +1,5 @@
 {
-  "name": "Template API Dev Container",
+  "name": "MongoRedisArchitecture API Dev Container",
   "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},

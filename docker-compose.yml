@@ -1,37 +1,36 @@
 services:
-  db:
-    image: postgres:latest
-    container_name: template_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: template
+  mongo:
+    image: mongo:latest
+    container_name: mongoredisarchitecture_mongo
+    restart: always
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - template_postgres_data:/var/lib/postgresql/data
+      - mongoredisarchitecture_mongo_data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d template"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
-  mailhog:
-    image: mailhog/mailhog
-    container_name: template_mailhog
+  redis:
+    image: redis:latest
+    container_name: mongoredisarchitecture_redis
     restart: always
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "6379:6379"
+    volumes:
+      - mongoredisarchitecture_redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 1025"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
 volumes:
-  template_postgres_data:
+  mongoredisarchitecture_mongo_data:
+  mongoredisarchitecture_redis_data:
 
-name: template
+name: mongoredisarchitecture
