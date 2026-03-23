@@ -1,5 +1,6 @@
 using API.Core.Application.Domain.Dto.Post;
 using API.Core.Application.Domain.Interfaces;
+using API.Core.Application.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,6 +31,10 @@ public static class PostApi
         api.MapPost("/posts/{postId}/comments", AddComment)
             .WithName("Add a comment.")
             .WithDescription("Adds a comment to a post.");
+
+        api.MapGet("/posts/search", SearchPosts)
+            .WithName("Search posts.")
+            .WithDescription("Full-text search across post titles and bodies.");
 
         return api;
     }
@@ -85,5 +90,20 @@ public static class PostApi
     {
         await postService.AddCommentAsync(postId, dto, cancellationToken);
         return TypedResults.NoContent();
+    }
+
+    static async Task<Ok<List<PostSearchResultDto>>> SearchPosts(
+        [FromQuery] string q,
+        [FromServices] IPostSearchService searchService,
+        [FromQuery] int limit = 10,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<PostSearchResultDto> results = await searchService.SearchAsync(
+            q,
+            limit,
+            cancellationToken
+        );
+        return TypedResults.Ok(results);
     }
 }

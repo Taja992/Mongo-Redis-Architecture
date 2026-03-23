@@ -1,6 +1,7 @@
 using API.Api;
 using API.Core.Application.Exceptions;
 using API.Core.Application.Extensions;
+using API.Core.Application.Interfaces;
 using API.Core.Configuration;
 using API.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -89,6 +90,12 @@ app.UseCors("FrontendPolicy");
 app.MapHealthChecks("/health").AllowAnonymous();
 app.MapBlogApi();
 app.MapPostApi();
+
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    IPostSearchService search = scope.ServiceProvider.GetRequiredService<IPostSearchService>();
+    await search.EnsureIndexAsync();
+}
 
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
