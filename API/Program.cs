@@ -21,6 +21,9 @@ builder.Host.UseSerilog(
 
 // Configure IOptions settings.
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("AppOptions"));
+builder.Services.Configure<WriteDbOptions>(builder.Configuration.GetSection("WriteDb"));
+builder.Services.Configure<MongoDbOptions>(builder.Configuration.GetSection("MongoDB"));
+builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection("Redis"));
 
 // Load settings for use in Program.cs.
 var appOptions = builder.Configuration.GetSection("AppOptions").Get<AppOptions>()!;
@@ -43,27 +46,36 @@ builder.Services.AddCors(options =>
     );
 });
 
-// Minimal DbContext setup for mongoredisarchitecture startup; replace with Npgsql/SqlServer later.
+WriteDbOptions writeDbOptions =
+    builder.Configuration.GetSection("WriteDb").Get<WriteDbOptions>()
+    ?? throw new InvalidOperationException("WriteDb configuration section is not configured.");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-    options.UseInMemoryDatabase("MongoRedisArchitectureDb");
+    options.UseNpgsql(writeDbOptions.ConnectionString);
 });
 
 // TODO: Add these when extension methods/types exist in mongoredisarchitecture.
 builder.Services.AddExceptionHandling();
 
 // MongoDB
-builder.Services.AddSingleton<IMongoClient>(
-    new MongoClient(builder.Configuration["MongoDB:ConnectionString"])
-);
+MongoDbOptions mongoDbOptions =
+    builder.Configuration.GetSection("MongoDB").Get<MongoDbOptions>()
+    ?? throw new InvalidOperationException("MongoDB configuration section is not configured.");
+
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoDbOptions.ConnectionString));
 
 builder.Services.AddScoped(sp =>
-    sp.GetRequiredService<IMongoClient>().GetDatabase(builder.Configuration["MongoDB:Database"])
+    sp.GetRequiredService<IMongoClient>().GetDatabase(mongoDbOptions.Database)
 );
 
 // Redis
-builder.Services.AddRedis(builder.Configuration);
+RedisOptions redisOptions =
+    builder.Configuration.GetSection("Redis").Get<RedisOptions>()
+    ?? throw new InvalidOperationException("Redis configuration section is not configured.");
+
+builder.Services.AddRedis(redisOptions);
 
 // builder.Services.AddJwtAuthentication(jwtSettings);
 builder.Services.AddApplication();
@@ -93,6 +105,10 @@ app.MapPostApi();
 
 using (IServiceScope scope = app.Services.CreateScope())
 {
+    // Ensure the PostgreSQL schema exists on first run.
+    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.EnsureCreatedAsync();
+
     IPostSearchService search = scope.ServiceProvider.GetRequiredService<IPostSearchService>();
     await search.EnsureIndexAsync();
 }

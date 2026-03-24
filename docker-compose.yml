@@ -1,4 +1,24 @@
 services:
+
+  postgres:
+    image: postgres:17
+    container_name: mongoredisarchitecture_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: blog-platform-write
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - mongoredisarchitecture_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   mongo:
     image: mongo:latest
     container_name: mongoredisarchitecture_mongo
@@ -32,5 +52,6 @@ services:
 volumes:
   mongoredisarchitecture_mongo_data:
   mongoredisarchitecture_redis_data:
+  mongoredisarchitecture_postgres_data:
 
 name: mongoredisarchitecture

@@ -1,4 +1,5 @@
 using API.Core.Domain.Entities;
+using API.Core.Domain.WriteModels;
 // using API.Core.Domain.Context;
 // using API.Core.Domain.Entities.Interfaces;
 // using API.Core.Domain.Identity.Entities;
@@ -44,6 +45,7 @@ public class AppDbContext : DbContext
     // public DbSet<AppUser> AppUsers { get; set; } = null!;
     // public DbSet<OAuthAccount> OAuthAccounts { get; set; } = null!;
     public DbSet<MongoRedisArchitecture> Tests { get; set; } = null!;
+    public DbSet<PostWriteModel> Posts { get; set; } = null!;
 
     // public DbSet<StripeAccount> StripeAccounts { get; set; } = null!;
 
