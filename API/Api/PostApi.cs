@@ -1,6 +1,9 @@
+using API.Core.Application.Commands.Posts;
 using API.Core.Application.Domain.Dto.Post;
 using API.Core.Application.Domain.Interfaces;
 using API.Core.Application.Interfaces;
+using API.Core.Application.Queries.Posts;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,35 +42,47 @@ public static class PostApi
         return api;
     }
 
-    static async Task<Results<Created<PostDto>, ProblemHttpResult>> CreatePost(
+    static async Task<Results<Created<PostDto>, NotFound>> CreatePost(
         string blogId,
         [FromBody] CreatePostDto dto,
-        [FromServices] IPostService postService,
+        [FromServices] ISender mediator,
         CancellationToken cancellationToken
     )
     {
-        PostDto post = await postService.CreateAsync(blogId, dto, cancellationToken);
-        return TypedResults.Created($"/api/posts/{post.Id}", post);
+        string postId = await mediator.Send(
+            new CreatePostCommand(blogId, dto.AuthorId, dto.Title, dto.Body, dto.Tags),
+            cancellationToken
+        );
+
+        // Query the read model so the response reflects what MongoDB actually stored.
+        // This also demonstrates the full CQRS loop: command writes, query reads.
+        PostDto? post = await mediator.Send(new GetPostQuery(postId), cancellationToken);
+        return post is null
+            ? TypedResults.NotFound()
+            : TypedResults.Created($"/api/posts/{postId}", post);
     }
 
     static async Task<Results<Ok<PostDto>, NotFound>> GetPost(
         string postId,
-        [FromServices] IPostService postService,
+        [FromServices] ISender mediator,
         CancellationToken cancellationToken
     )
     {
-        PostDto? post = await postService.GetByIdAsync(postId, cancellationToken);
+        PostDto? post = await mediator.Send(new GetPostQuery(postId), cancellationToken);
         return post is null ? TypedResults.NotFound() : TypedResults.Ok(post);
     }
 
     static async Task<NoContent> UpdatePost(
         string postId,
         [FromBody] UpdatePostDto dto,
-        [FromServices] IPostService postService,
+        [FromServices] ISender mediator,
         CancellationToken cancellationToken
     )
     {
-        await postService.UpdateAsync(postId, dto, cancellationToken);
+        await mediator.Send(
+            new UpdatePostCommand(postId, dto.Title, dto.Body, dto.Tags),
+            cancellationToken
+        );
         return TypedResults.NoContent();
     }
 

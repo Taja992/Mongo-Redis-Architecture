@@ -1,10 +1,13 @@
+using API.Core.Application.Commands.Posts;
 using API.Core.Application.Domain.Interfaces;
 using API.Core.Application.Interfaces;
 using API.Core.Application.Services;
+using API.Core.Configuration;
 using API.Core.Domain.Interfaces;
 using API.Infrastructure.Cache;
 using API.Infrastructure.Repositories;
 using API.Infrastructure.Search;
+using API.Infrastructure.SqlRepositories;
 using StackExchange.Redis;
 
 namespace API.Core.Application.Extensions;
@@ -13,6 +16,13 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        // MediatR — registers all handlers in this assembly automatically.
+        // Why RegisterServicesFromAssemblyContaining<CreatePostCommand>()? CreatePostCommand
+        // is in API.Core.Application.Commands.Posts. MediatR scans the whole assembly containing
+        // that type — which is the API project — so it finds every handler including the Infrastructure-layer
+        //  event handlers (PostCreatedEventHandler, etc.) all in one call.
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreatePostCommand>());
+
         //services.AddScoped<ICurrentContext, CurrentContext>();
 
         // Application Services
@@ -49,6 +59,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBlogRepository, MongoBlogRepository>();
         services.AddScoped<IPostRepository, MongoPostRepository>();
 
+        // CQRS write-side repository (PostgreSQL).
+        services.AddScoped<IPostWriteRepository, SqlPostWriteRepository>();
+
         // Interceptors
         //services.AddScoped<OwnershipInterceptor>();
 
@@ -59,15 +72,11 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddRedis(
         this IServiceCollection services,
-        IConfiguration configuration
+        RedisOptions options
     )
     {
-        string connectionString =
-            configuration["Redis:ConnectionString"]
-            ?? throw new InvalidOperationException("Redis:ConnectionString is not configured.");
-
         services.AddSingleton<IConnectionMultiplexer>(
-            ConnectionMultiplexer.Connect(connectionString)
+            ConnectionMultiplexer.Connect(options.ConnectionString)
         );
 
         return services;

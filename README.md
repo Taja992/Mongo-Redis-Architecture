@@ -86,8 +86,24 @@ Comment rate limiting uses Redis `INCR` — atomic, no race condition. The count
 **Global exception handling**
 All errors surface through `GlobalExceptionHandler` as RFC 9457 `ProblemDetails`. Services throw domain exceptions (`AppException` subclasses); endpoints have no try/catch.
 
-**No EF Core for domain entities**
-`AppDbContext` is present but unused by the blog domain — it's a template artefact backed by an in-memory DB. All domain data flows through the MongoDB repositories.
+**EF Core for the write store**
+`AppDbContext` targets PostgreSQL and owns the write-side `posts` table (`PostWriteModel`). Entity configurations are auto-applied from `Infrastructure/Configuration/`. All domain read data flows through the MongoDB repositories.
+
+**CQRS — separate read and write stores**
+Writes go to PostgreSQL (safe, transactional, source of truth). Reads come from MongoDB (denormalized, fast, no joins). A MediatR domain event syncs MongoDB after every write, so if MongoDB ever goes wrong it can be rebuilt from PostgreSQL.
+
+```mermaid
+flowchart LR
+    A([Write\nPOST / PUT]) --> B[Command Handler]
+    B --> C[(PostgreSQL\nsource of truth)]
+    B --> D[Domain Event]
+    D --> E[(MongoDB\nread projection)]
+    F([Read\nGET]) --> G[Query Handler]
+    G --> E
+
+    style C fill:#336791,color:#fff
+    style E fill:#4DB33D,color:#fff
+```
 
 ---
 
